@@ -32,7 +32,7 @@ services:
     image: confluentinc/cp-kafka:7.3.0
     container_name: kafka_broker
     ports:
-      - "9092:9092"
+      - "9094:9094"
     depends_on:
       - zookeeper
     restart: on-failure

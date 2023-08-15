@@ -31,6 +31,8 @@ func InitKafkaConsumer(topic string) {
 		log.Fatalf("Failed to subscribe to topic %s: %s", topic, err)
 	}
 
+	log.Println("Kafka consumer initialized successfully.")
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 

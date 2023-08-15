@@ -12,7 +12,7 @@ var once sync.Once
 // Init initializes the Cassandra session once as a singleton.
 func Init() {
 	once.Do(func() {
-		cluster := gocql.NewCluster("cassandra:9042")
+		cluster := gocql.NewCluster("localhost:9042") // need to update to connect to docker cassandra:9042
 		cluster.Keyspace = "mykeyspace"
 		var err error
 		session, err = cluster.CreateSession()

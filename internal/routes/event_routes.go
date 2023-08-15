@@ -7,5 +7,5 @@ import (
 )
 
 func SetupEventRoutes(app *fiber.App) {
-	app.Post("/visit", handlers.CreateVisitHandler)
+	app.Post("/visit", handlers.CreateEventHandler)
 }

@@ -17,7 +17,7 @@ type EventHandler struct {
 	// Add any additional fields or dependencies your handler needs
 }
 
-func CreateVisitHandler(c *fiber.Ctx) error {
+func CreateEventHandler(c *fiber.Ctx) error {
 	var event models.Event
 	if err := c.BodyParser(&event); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -33,7 +33,6 @@ func CreateVisitHandler(c *fiber.Ctx) error {
 		})
 	}
 	message := string(jsonBytes)
-
 	k.ProduceMessage(topic, message)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -46,8 +45,6 @@ func (h *EventHandler) HandleMessage(msg *kafka.Message) error {
 
 	err := json.Unmarshal(msg.Value, &event)
 	if err != nil {
-		fmt.Println("Received message error", err)
-
 		return err
 	}
 

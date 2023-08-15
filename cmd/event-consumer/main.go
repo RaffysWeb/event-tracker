@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"kafka_events/internal/handlers"
 	"kafka_events/internal/services"
 	"kafka_events/pkg/database"
@@ -16,7 +15,7 @@ func main() {
 
 	go k.InitKafkaConsumer(topic)
 	defer k.CloseConsumer()
-	fmt.Println("foo")
+
 	eventHandler := &handlers.EventHandler{}
-	services.StartKafkaService(eventHandler) // need to rename
+	services.StartKafkaService(eventHandler)
 }
