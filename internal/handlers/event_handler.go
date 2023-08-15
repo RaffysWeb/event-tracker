@@ -27,6 +27,9 @@ func CreateEventHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	event.ID = gocql.TimeUUID()
+	event.CreatedAt = time.Now()
+
 	// Convert the event object to JSON string
 	jsonBytes, err := json.Marshal(event)
 	if err != nil {
@@ -49,9 +52,6 @@ func (h *EventHandler) HandleMessage(msg *kafka.Message) error {
 	if err != nil {
 		return err
 	}
-
-	event.ID = gocql.TimeUUID()
-	event.CreatedAt = time.Now()
 
 	if err := event.SaveEvent(); err != nil {
 		fmt.Println("SaveEvent", err)
