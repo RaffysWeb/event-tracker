@@ -25,35 +25,34 @@ func (e *Event) SaveEvent() error {
 	session := database.GetSession()
 
 	query := session.Query(`
-	INSERT INTO events_by_trackable (
-			id,
-			actor_id, 
-			trackable_owner_id,
-			event_type,
-			trackable_type,
-			trackable_id, 
-			created_at,
-			metadata) 
-	VALUES (
-			:id,
-			:actor_id,
-			:trackable_owner_id,
-			:event_type,
-			:trackable_type,
-			:trackable_id,
-			:created_at,
-			:metadata
-	)`).
-		Bind(
-			gocql.TimeUUID(),
-			e.ActorID,
-			e.TrackableOwnerID,
-			e.EventType,
-			e.TrackableType,
-			e.TrackableID,
-			time.Now(),
-			e.Metadata,
-		)
+		INSERT INTO events_by_trackable (
+				id,
+				actor_id, 
+				trackable_owner_id,
+				event_type,
+				trackable_type,
+				trackable_id, 
+				created_at,
+				metadata) 
+		VALUES (
+				:id,
+				:actor_id,
+				:trackable_owner_id,
+				:event_type,
+				:trackable_type,
+				:trackable_id,
+				:created_at,
+				:metadata
+		)`).Bind(
+		e.ID,
+		e.ActorID,
+		e.TrackableOwnerID,
+		e.EventType,
+		e.TrackableType,
+		e.TrackableID,
+		e.CreatedAt,
+		e.Metadata,
+	)
 
 	return query.Exec()
 }

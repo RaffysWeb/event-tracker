@@ -5,8 +5,10 @@ import (
 	"fmt"
 	k "kafka_events/pkg/kafka"
 	"kafka_events/pkg/models"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/gocql/gocql"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -47,6 +49,9 @@ func (h *EventHandler) HandleMessage(msg *kafka.Message) error {
 	if err != nil {
 		return err
 	}
+
+	event.ID = gocql.TimeUUID()
+	event.CreatedAt = time.Now()
 
 	if err := event.SaveEvent(); err != nil {
 		fmt.Println("SaveEvent", err)

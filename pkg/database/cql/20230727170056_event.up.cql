@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS mykeyspace.events_by_trackable (
 	metadata  					MAP<TEXT, TEXT>,
 
 	PRIMARY KEY ((trackable_type, trackable_id), created_at)
-);
+) WITH CLUSTERING ORDER BY (created_at DESC);
