@@ -5,8 +5,10 @@ import (
 	"fmt"
 	k "kafka_events/pkg/kafka"
 	"kafka_events/pkg/models"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/gocql/gocql"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -24,6 +26,9 @@ func CreateEventHandler(c *fiber.Ctx) error {
 			"error": "Failed to parse JSON",
 		})
 	}
+
+	event.ID = gocql.TimeUUID()
+	event.CreatedAt = time.Now()
 
 	// Convert the event object to JSON string
 	jsonBytes, err := json.Marshal(event)
