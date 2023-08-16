@@ -27,18 +27,10 @@ func CreateEventHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	event.ID = gocql.TimeUUID()
+	event.ID = gocql.TimeUUID().String()
 	event.CreatedAt = time.Now()
 
-	// Convert the event object to JSON string
-	jsonBytes, err := json.Marshal(event)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to marshal event object to JSON",
-		})
-	}
-	message := string(jsonBytes)
-	k.ProduceMessage(topic, message)
+	k.ProduceMessage(topic, event)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Event event sent to Kafka",

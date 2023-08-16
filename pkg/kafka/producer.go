@@ -1,14 +1,18 @@
 package kafka
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/schemaregistry/serde/avro"
 )
 
 var producer *kafka.Producer
 
-func InitKafkaProducer() {
+func InitKafkaProducer(topic string) {
 	configMap := &kafka.ConfigMap{
 		"bootstrap.servers": kafkaBrokers,
 	}
@@ -32,17 +36,24 @@ func InitKafkaProducer() {
 	}()
 }
 
-func ProduceMessage(topic string, message string) {
+func ProduceMessage(topic string, message interface{}) {
 	if producer == nil {
 		log.Println("Kafka producer is not initialized.")
 		return
 	}
 
+	serializer := buildSerializer(topic)
 	deliveryChan := make(chan kafka.Event)
 
-	err := producer.Produce(&kafka.Message{
+	serializedMessage, err := serializer.Serialize(topic, &message)
+
+	if err != nil {
+		fmt.Printf("Failed to serialize payload: %s\n", err)
+	}
+
+	err = producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          []byte(message),
+		Value:          serializedMessage,
 	}, deliveryChan)
 
 	if err != nil {
@@ -68,4 +79,20 @@ func CloseProducer() {
 
 	producer.Close()
 	log.Println("Kafka producer closed successfully.")
+}
+
+func buildSerializer(topic string) *avro.GenericSerializer {
+	client, err := schemaregistry.NewClient(schemaregistry.NewConfig(registryURL))
+
+	if err != nil {
+		log.Fatalf("Failed to create schema registry client: %s\n", err)
+	}
+
+	ser, err := avro.NewGenericSerializer(client, serde.ValueSerde, avro.NewSerializerConfig())
+
+	if err != nil {
+		log.Fatalf("Failed to create serializer: %s\n", err)
+	}
+
+	return ser
 }

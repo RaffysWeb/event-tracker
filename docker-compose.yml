@@ -42,12 +42,48 @@ services:
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka_broker:9092,OUTSIDE://localhost:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
-      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_broker:9092,PLAINTEXT_INTERNAL://kafka_broker:9092,PLAINTEXT_OUTSIDE://localhost:9094
-      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka_broker:9092,PLAINTEXT_INTERNAL://kafka_broker:29092,PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://localhost:29092
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      
+  kafka_connect:
+    image: kafka-connector:1.0.0
+    container_name: 'kafka_connect'
+    ports:
+      - '8083:8083'
+    environment:
+      - CONNECT_BOOTSTRAP_SERVERS=kafka_broker:9092
+      - CONNECT_REST_PORT=8083
+      - CONNECT_GROUP_ID=quickstart
+      - CONNECT_CONFIG_STORAGE_TOPIC=quickstart-config
+      - CONNECT_OFFSET_STORAGE_TOPIC=quickstart-offsets
+      - CONNECT_STATUS_STORAGE_TOPIC=quickstart-status
+      - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_REST_ADVERTISED_HOST_NAME=localhost
+      - CONNECT_SCHEMA_REGISTRY_URL=http://schema_registry:8082
+    volumes:
+      - ./kafka/connector-config.json:/etc/kafka-connect-cassandra/connector-config.json
+    depends_on:
+        - kafka_broker
+        - zookeeper
+        - schema_registry
+    
+  schema_registry:
+    image: confluentinc/cp-schema-registry:latest
+    ports:
+      - "8081:8081"
+    depends_on:
+      - zookeeper
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka_broker:9092
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
 
   cassandra:
     image: cassandra:latest
@@ -57,3 +93,4 @@ services:
     environment:
       - CASSANDRA_CLUSTER_NAME=MyCluster
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_LOCAL_DATA_CENTER=local_dc

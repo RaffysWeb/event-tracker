@@ -3,21 +3,19 @@ package models
 import (
 	"kafka_events/pkg/database"
 	"time"
-
-	"github.com/gocql/gocql"
 )
 
 type Metadata map[string]string
 
 type Event struct {
-	ID               gocql.UUID `json:"id"`
-	ActorID          string     `json:"actorId"`
-	TrackableOwnerID string     `json:"trackableOwnerId"`
-	EventType        string     `json:"eventType"`
-	TrackableType    string     `json:"trackableType"`
-	TrackableID      string     `json:"trackableId"`
-	CreatedAt        time.Time  `json:"createdAt"`
-	Metadata         Metadata   `json:"metadata"`
+	ID               string    `json:"id" avro:"id"`
+	ActorID          string    `json:"actor_id" avro:"actor_id"`
+	TrackableOwnerID string    `json:"trackable_owner_id" avro:"trackable_owner_id"`
+	EventType        string    `json:"event_type" avro:"event_type"`
+	TrackableType    string    `json:"trackable_type" avro:"trackable_type"`
+	TrackableID      string    `json:"trackable_id" avro:"trackable_id"`
+	CreatedAt        time.Time `json:"created_at" avro:"created_at"`
+	Metadata         Metadata  `json:"metadata" avro:"metadata"`
 }
 
 // SaveEvent saves the Event data to the Cassandra database.

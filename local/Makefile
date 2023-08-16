@@ -19,7 +19,7 @@ up:
 ## up_infra: starts all containers infra related resources
 up_infra:
 	@echo "Starting Docker images..."
-	docker-compose up zookeeper kafka_broker cassandra -d
+	docker-compose up zookeeper kafka_broker cassandra kafka_connect -d
 	@echo "Docker images started!"
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
@@ -35,7 +35,7 @@ up_build_infra:
 	@echo "Stopping docker images (if running...)"
 	docker-compose down
 	@echo "Building (when required) and starting docker images..."
-	docker-compose up zookeeper kafka_broker cassandra --build -d
+	docker-compose up zookeeper kafka_broker cassandra kafka_connect --build -d
 	@echo "Docker images started!"
 
 ## down: stop docker compose

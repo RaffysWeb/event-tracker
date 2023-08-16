@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	kafka.InitKafkaProducer()
+	kafka.InitKafkaProducer("events")
 	defer kafka.CloseProducer()
 
 	app := fiber.New(fiber.Config{})

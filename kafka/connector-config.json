@@ -1,0 +1,93 @@
+{
+  "name": "cassandra-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.cassandra.CassandraSinkConnector",
+    "tasks.max": "1",
+    "topics": "events",
+    "cassandra.contact.points": "cassandra",
+    "cassandra.local.datacenter": "dc1",
+    "cassandra.port": "9042",
+    "cassandra.keyspace": "mykeyspace",
+    "cassandra.table": "events_by_trackable",
+    "cassandra.security": "NONE",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "confluent.topic.replication.factor": 1,
+    "confluent.topic.bootstrap.servers": "kafka_broker:9092",
+    // "value.converter.schemas.enable": "false",
+    // "transforms": "createKey",
+    // "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
+    // "transforms.createKey.fields": "trackable_type,trackable_id,created_at",
+    "errors.tolerance": "all"
+  }
+}
+
+
+log4j.rootLogger=INFO, stdout
+
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern =[%d
+] %p %m (%c)%n
+
+
+# default log levels
+log4j.logger.org.reflections=ERROR
+log4j.logger.org.apache.zookeeper=ERROR
+log4j.logger.org.I0Itec.zkclient=ERROR
+
+
+
+
+curl -X PUT -H "Content-Type: application/json" \
+  --data '{
+  "connector.class": "io.confluent.connect.cassandra.CassandraSinkConnector",
+  "tasks.max": "1",
+  "topics": "events",
+  "cassandra.contact.points": "cassandra",
+  "cassandra.local.datacenter": "dc1",
+  "cassandra.port": "9042",
+  "cassandra.keyspace": "mykeyspace",
+  "cassandra.table": "events_by_trackable",
+  "cassandra.security": "NONE",
+  "value.converter": "io.confluent.connect.avro.AvroConverter",
+  "value.converter.schema.registry.url": "http://schema_registry:8081",
+  "value.converter.schemas.enable": "true",
+  "confluent.topic.replication.factor": 1,
+  "confluent.topic.bootstrap.servers": "kafka_broker:9092",
+  "transforms": "ValueToKey",
+  "transforms.converter": "io.confluent.connect.avro.AvroConverter",
+  "transforms.ValueToKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
+  "transforms.ValueToKey.fields": "trackable_type,trackable_id,created_at"
+}' \
+http: //localhost:8083/connectors/cassandra-sink/config
+
+curl -X POST http: //localhost:8083/connectors/cassandra-sink/restart
+// save schema to registry
+curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+--data '{
+  "schema": "{\"type\":\"record\",\"name\":\"events\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"actor_id\",\"type\":\"string\"},{\"name\":\"trackable_owner_id\",\"type\":\"string\"},{\"name\":\"event_type\",\"type\":\"string\"},{\"name\":\"trackable_type\",\"type\":\"string\"},{\"name\":\"trackable_id\",\"type\":\"string\"},{\"name\":\"created_at\",\"type\":\"string\"},{\"name\":\"metadata\",\"type\":{\"type\":\"map\",\"values\":\"string\"}}]}"
+}' \
+http: //localhost:8081/subjects/events/versions
+// save schema to registry
+  curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+  --data '{
+  "schema": "{\"type\":\"record\",\"name\":\"users\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}"
+}' \
+  http: //localhost:8081/subjects/users/versions
+
+
+  kafka-avro-console-consumer --bootstrap-server kafka_broker: 9092 --topic events
+
+
+
+
+
+
+
+
+curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+--data '{
+  "schema": "{\"type\":\"record\",\"name\":\"Event\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"},{\"name\":\"actor_id\",\"type\":\"string\"},{\"name\":\"trackable_owner_id\",\"type\":\"string\"},{\"name\":\"event_type\",\"type\":\"string\"},{\"name\":\"trackable_type\",\"type\":\"string\"},{\"name\":\"trackable_id\",\"type\":\"string\"},{\"name\":\"created_at\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"metadata\",\"type\":{\"type\":\"map\",\"values\":\"string\"}}]}"
+}' \
+http: //localhost:8081/subjects/events-value/versions
