@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	topic := "new-events"
+	topic := "new_events"
 
 	cassandra.Init()
 	defer cassandra.Close()

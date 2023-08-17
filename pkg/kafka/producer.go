@@ -32,7 +32,7 @@ func InitKafkaProducer() {
 	}()
 }
 
-func ProduceMessage(topic string, message string) {
+func ProduceMessage(topic string, message []byte) {
 	if producer == nil {
 		log.Println("Kafka producer is not initialized.")
 		return
@@ -42,7 +42,7 @@ func ProduceMessage(topic string, message string) {
 
 	err := producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          []byte(message),
+		Value:          message,
 	}, deliveryChan)
 
 	if err != nil {

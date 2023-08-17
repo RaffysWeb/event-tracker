@@ -13,7 +13,7 @@ import (
 )
 
 // TODO: move this to config or elsewhere
-var topic = "new-events"
+var topic = "new_events"
 
 type EventHandler struct {
 	// Add any additional fields or dependencies your handler needs
@@ -37,8 +37,8 @@ func CreateEventHandler(c *fiber.Ctx) error {
 			"error": "Failed to marshal event object to JSON",
 		})
 	}
-	message := string(jsonBytes)
-	k.ProduceMessage(topic, message)
+
+	k.ProduceMessage(topic, jsonBytes)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Event event sent to Kafka",

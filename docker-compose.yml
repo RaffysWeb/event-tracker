@@ -59,3 +59,23 @@ services:
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
     volumes:
       - ./local/data/db/cassandra:/var/lib/cassandra
+
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    env_file:
+      - ./config/influxdb/influxdb.env
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./local/data/db/influxdb:/var/lib/influxdb2:rw
+
+  telegraf:
+    image: telegraf:latest
+    container_name: telegraf
+    env_file:
+      - ./config/influxdb/influxdb.env
+    volumes:
+      - ./config/influxdb/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - influxdb
