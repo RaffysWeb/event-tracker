@@ -1,7 +1,7 @@
 package models
 
 import (
-	"kafka_events/pkg/database"
+	"kafka_events/pkg/database/cassandra"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -22,7 +22,7 @@ type Event struct {
 
 // SaveEvent saves the Event data to the Cassandra database.
 func (e *Event) SaveEvent() error {
-	session := database.GetSession()
+	session := cassandra.GetSession()
 
 	query := session.Query(`
 		INSERT INTO events_by_trackable (
