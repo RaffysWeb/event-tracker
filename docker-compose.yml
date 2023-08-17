@@ -57,3 +57,5 @@ services:
     environment:
       - CASSANDRA_CLUSTER_NAME=MyCluster
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    volumes:
+      - ./local/data/db/cassandra:/var/lib/cassandra
