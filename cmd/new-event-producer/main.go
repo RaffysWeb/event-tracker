@@ -5,17 +5,13 @@ import (
 	"kafka_events/internal/routes"
 	"kafka_events/pkg/kafka"
 	"log"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
 	kafka.InitKafkaProducer()
 	defer kafka.CloseProducer()
 
-	app := fiber.New(fiber.Config{})
-	routes.SetupEventRoutes(app)
-
+	router := routes.SetupNewEventRoutes()
 	fmt.Println("Server started on port 4000")
-	log.Fatal(app.Listen(":4000"))
+	log.Fatal(router.Run(":4000"))
 }
