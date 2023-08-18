@@ -16,6 +16,6 @@ func main() {
 	app := fiber.New(fiber.Config{})
 	routes.SetupEventRoutes(app)
 
-	fmt.Println("Server started on port 3000")
-	log.Fatal(app.Listen(":3000"))
+	fmt.Println("Server started on port 4000")
+	log.Fatal(app.Listen(":4000"))
 }
