@@ -19,6 +19,7 @@ type EventHandler struct {
 	// Add any additional fields or dependencies your handler needs
 }
 
+// extend the struct to implement the HandleMessage method
 func CreateEventHandler(c *fiber.Ctx) error {
 	var event models.Event
 	if err := c.BodyParser(&event); err != nil {
