@@ -6,7 +6,7 @@ services:
       context: ./cmd/event-producer
     container_name: event-producer
     ports:
-      - "3000:3000"
+      - "4000:4000"
     depends_on:
       - kafka_broker
 
