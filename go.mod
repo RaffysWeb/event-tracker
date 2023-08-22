@@ -3,9 +3,11 @@ module kafka_events
 go 1.19
 
 require (
+	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gocql/gocql v1.5.2
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/influxdata/influxdb-client-go/v2 v2.12.3
 )

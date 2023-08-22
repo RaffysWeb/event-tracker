@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"kafka_events/pkg/database/influxdb"
+	"kafka_events/pkg/event"
 	k "kafka_events/pkg/kafka"
-	"kafka_events/pkg/models"
 	"log"
 	"net/http"
 	"time"
@@ -36,69 +36,79 @@ func HandleLiveEventsWebSocket(c *gin.Context, db *influxdb.DB) {
 	}
 	defer conn.Close()
 
-	fmt.Println("HandleLiveEventsWebSocket")
 	for {
-		now := time.Now()
-		fiveMinutesAgo := now.Add(-5 * time.Minute)
+		startTime := time.Now().Add(-10 * time.Second)
+		tenMinutesAgo := startTime.Add(-10 * time.Minute)
 
 		query := fmt.Sprintf(`
-		from(bucket: "events")
-			|> range(start: %v, stop: %v)
-			|> filter(fn: (r) => r["_measurement"] == "kafka_consumer")
-	`, fiveMinutesAgo.UTC().Format(time.RFC3339), now.UTC().Format(time.RFC3339))
+			from(bucket: "events")
+					|> range(start: %v, stop: %v)
+					|> filter(fn: (r) => r["_measurement"] == "kafka_consumer")
+					|> group(columns: ["_created_at", "event_type"])
+					|> aggregateWindow(every: 10s, fn: count, createEmpty: true)
+			`, tenMinutesAgo.UTC().Format(time.RFC3339), startTime.UTC().Format(time.RFC3339))
 
 		queryAPI := db.QueryAPI()
 
 		result, err := queryAPI.Query(context.Background(), query)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Failed to query", err)
 			break
 		}
 		defer result.Close()
+		var events []event.EventsByActionType
 
-		var events []models.Event
-
+		fmt.Println("result", result)
 		for result.Next() {
 			row := result.Record().Values()
 			bytes, err := json.Marshal(row)
+			fmt.Println(row)
 			if err != nil {
 				fmt.Println("Error marshaling:", err)
 				continue
 			}
 
-			var event models.Event
+			var event event.EventsByActionType
 			err = json.Unmarshal(bytes, &event)
+
+			if err != nil {
+				fmt.Println("Error parsing time:", err)
+				return
+			}
 
 			if err != nil {
 				fmt.Println("Error unmarshaling:", err)
 				continue
 			}
 
-			// Append the event to the events slice
 			events = append(events, event)
 		}
 
-		// Send the data to the WebSocket client.
 		if err := conn.WriteJSON(events); err != nil {
 			log.Println("WebSocket error:", err)
 			return
 		}
 
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 1)
 	}
 }
 
 // HandleKafkaMessage handles the event message from kafka and saves it to cassandra
 func (h *EventHandler) HandleKafkaMessage(msg *kafka.Message) error {
-	var event models.Event
+	var e event.Event
 
-	err := json.Unmarshal(msg.Value, &event)
+	err := json.Unmarshal(msg.Value, &e)
 	if err != nil {
 		return err
 	}
 
-	if err := event.SaveEvent(); err != nil {
-		fmt.Println("SaveEvent", err)
+	// TODO: Need to move the event initialization main or somewhere else
+	// TODO: Use context from kafka message
+	es := event.NewEventService(event.NewEventRepository())
+	_, err = es.CreateEvent(context.Background(), &e)
+
+	if err != nil {
+		fmt.Println("CreateEvent", err)
 
 		return err
 	}
@@ -108,7 +118,7 @@ func (h *EventHandler) HandleKafkaMessage(msg *kafka.Message) error {
 
 // CreateEventHandler handles the new events and sends them to kafka
 func (h *EventHandler) CreateEventHandler(c *gin.Context) {
-	var event models.Event
+	var event event.Event
 	if err := c.ShouldBindJSON(&event); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to parse JSON",
