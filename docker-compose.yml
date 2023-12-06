@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   event-producer:
@@ -38,7 +38,7 @@ services:
     restart: on-failure
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka_broker:9092,OUTSIDE://localhost:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT

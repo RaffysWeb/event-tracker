@@ -1,24 +1,37 @@
 package influxdb
 
 import (
+	"fmt"
+	"log"
+	"os"
+
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
-)
-
-// TODO: Move secret to .env file and config out of here
-const (
-	url   = "http://localhost:8086"
-	token = "iIXvA0k0tCNpZM5yOaT0-mHh4GUP8OEe2Fylx6pXziHXrnUUp7HV8nfotLOIP310zd9vh9m_y9NfBkM_kUd_3w=="
-	org   = "my-org"
+	"github.com/joho/godotenv"
 )
 
 type DB struct {
 	influxClient influxdb2.Client
+	org          string
+	token        string
+	url          string
 }
 
 func Init() *DB {
+	fmt.Println("init")
+	err := godotenv.Load("../../config/influxdb/influxdb.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	url := os.Getenv("INFLUXDB_INIT_URl")
+	token := os.Getenv("INFLUXDB_INIT_ADMIN_TOKEN")
+
 	influxClient := influxdb2.NewClient(url, token)
-	return &DB{influxClient: influxClient}
+	return &DB{
+		influxClient: influxClient,
+		org:          os.Getenv("INFLUXDB_INIT_ORG"),
+	}
 }
 
 func (db *DB) Close() {
@@ -30,5 +43,5 @@ func (db *DB) GetClient() influxdb2.Client {
 }
 
 func (db *DB) QueryAPI() api.QueryAPI {
-	return db.influxClient.QueryAPI(org)
+	return db.influxClient.QueryAPI(db.org)
 }
